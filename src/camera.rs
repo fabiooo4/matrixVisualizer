@@ -12,13 +12,17 @@ impl Plugin for CameraPlugin {
 
 fn spawn_camera(mut commands: Commands) {
     commands.spawn((Camera3dBundle {
-        transform: Transform::from_xyz(0., 0., 5.).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_translation(Vec3::new(0.0, 0.0, 5.0)),
         projection: OrthographicProjection {
-            scaling_mode: ScalingMode::FixedVertical(6.0),
+            scaling_mode: ScalingMode::FixedVertical(1.0),
             ..default()
         }.into(),
         ..Default::default()
     },
-        PanOrbitCamera::default(),
+        PanOrbitCamera {
+            button_pan: MouseButton::Left,
+            button_orbit: MouseButton::Right,
+            ..default()
+        }
     ));
 }
