@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 bevy = { version = "0.13.2", features = ["wayland"] }
+bevy_panorbit_camera = "0.18.2"

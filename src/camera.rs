@@ -1,4 +1,5 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, render::camera::ScalingMode};
+use bevy_panorbit_camera::PanOrbitCamera;
 
 #[derive(Debug, Component)]
 pub struct CameraPlugin;
@@ -10,8 +11,14 @@ impl Plugin for CameraPlugin {
 }
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn(Camera3dBundle {
+    commands.spawn((Camera3dBundle {
         transform: Transform::from_xyz(0., 0., 5.).looking_at(Vec3::ZERO, Vec3::Y),
+        projection: OrthographicProjection {
+            scaling_mode: ScalingMode::FixedVertical(6.0),
+            ..default()
+        }.into(),
         ..Default::default()
-    });
+    },
+        PanOrbitCamera::default(),
+    ));
 }
