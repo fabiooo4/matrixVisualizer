@@ -5,26 +5,76 @@ pub struct AxisPlugin;
 
 impl Plugin for AxisPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, spawn_axis);
+        app.add_systems(Startup, setup_basis);
+        app.add_systems(Update, (spawn_axis, ));
     }
 }
 
-fn spawn_axis(mut gizmos: Gizmos) {
-    let axis_color = Color::WHITE;
+#[derive(Debug, Component)]
+struct Basis3d {
+    basis: [Vec3; 3],
+}
 
-    // let basis = [Vec2::new(1., 0.), Vec2::new(0., 1.)];
-    let basis = [Vec3::new(1., 0., 0.), Vec3::new(0., 1., 0.), Vec3::new(0., 0., 1.)];
-    let matrix = Mat3::from_cols(basis[0], basis[1], basis[2]);
+fn setup_basis(mut commands: Commands) {
+    let matrix = Mat3::from_cols(
+        Vec3::new(1., 0., 0.),
+        Vec3::new(0., 1., 0.),
+        Vec3::new(0., 0., 1.),
+    );
+
+    commands.spawn((Basis3d {
+        basis: matrix
+            .to_cols_array_2d()
+            .iter()
+            .map(|v| Vec3::new(v[0], v[1], v[2]))
+            .collect::<Vec<Vec3>>()
+            .try_into()
+            .expect("Invalid basis"),
+    },));
+}
+
+fn spawn_axis(mut gizmos: Gizmos, query: Query<&Basis3d>) {
+    let axis_color = [Color::rgb(255./255., 17./255., 85./255.), Color::rgb(17./255., 252./255., 168./255.), Color::rgb(51./255., 187./255., 255./255.)];
 
     // Cycle through the basis vectors and draw them
-    for vector in matrix.to_cols_array_2d().iter() {
+    for (i, vector) in query.iter().next().expect("No basis found").basis.iter().enumerate() {
         gizmos.primitive_3d(
             Line3d {
-                direction: Direction3d::new(Vec3::new(vector[0], vector[1], vector[2])).expect("Invalid direction"),
+                direction: Direction3d::new(*vector).expect("Invalid direction"),
             },
             Vec3::ZERO,
             Quat::IDENTITY,
-            axis_color,
+            axis_color[i],
         );
     }
+
+    // Add low opacity grey grid for every unit in the x and y direction
+    for i in -10..=10 {
+        gizmos.primitive_3d(
+            Line3d {
+                direction: Direction3d::new(Vec3::Y).expect("Invalid direction"),
+            },
+            Vec3::new(i as f32, -10.0, 0.0),
+            Quat::IDENTITY,
+            Color::rgba(0.5, 0.5, 0.5, 0.1),
+        );
+        gizmos.primitive_3d(
+            Line3d {
+                direction: Direction3d::new(Vec3::X).expect("Invalid direction"),
+            },
+            Vec3::new(-10.0, i as f32, 0.0),
+            Quat::IDENTITY,
+            Color::rgba(0.5, 0.5, 0.5, 0.1),
+        );
+    }
+}
+
+fn update_y_basis(mut query: Query<&mut Basis3d>) {
+
+    // Rotate the basis vectors around the z-axis by 0.01 radians per second
+    let rotation = Quat::from_rotation_z(0.1 * 1.0 / 60.0);
+    for vector in query.iter_mut().next().expect("No basis found").basis.iter_mut() {
+        *vector = rotation.mul_vec3(*vector);
+    }
+
 }
