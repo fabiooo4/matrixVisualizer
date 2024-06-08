@@ -11,34 +11,35 @@ impl Plugin for AxisPlugin {
 }
 
 #[derive(Debug, Component)]
-struct Basis3d {
-    basis: [Vec3; 3],
+struct Basis2d {
+    basis: [Vec2; 2],
 }
 
 fn setup_basis(mut commands: Commands) {
-    let matrix = Mat3::from_cols(
-        Vec3::new(2., 0., 0.),
-        Vec3::new(0., 1., 0.),
-        Vec3::new(0., 0., 1.),
+    let matrix = Mat2::from_cols(
+        Vec2::new(1., 0.),
+        Vec2::new(0., 1.),
     );
 
-    commands.spawn((Basis3d {
+    commands.spawn((Basis2d {
         basis: matrix
             .to_cols_array_2d()
             .iter()
-            .map(|v| Vec3::new(v[0], v[1], v[2]))
-            .collect::<Vec<Vec3>>()
+            .map(|v| Vec2::new(v[0], v[1]))
+            .collect::<Vec<Vec2>>()
             .try_into()
             .expect("Invalid basis"),
     },));
 }
 
-fn spawn_axis(mut commands: Commands, mut gizmos: Gizmos, query: Query<&Basis3d>) {
+fn spawn_axis(mut commands: Commands, mut gizmos: Gizmos, query: Query<&Basis2d>) {
     let axis_color = [
         Color::rgb(255. / 255., 17. / 255., 85. / 255.),
         Color::rgb(17. / 255., 252. / 255., 168. / 255.),
         Color::rgb(51. / 255., 187. / 255., 255. / 255.),
     ];
+
+    let scale = 10.0;
 
     // Cycle through the basis vectors and draw them
     commands.spawn(
@@ -50,12 +51,13 @@ fn spawn_axis(mut commands: Commands, mut gizmos: Gizmos, query: Query<&Basis3d>
             .iter()
             .enumerate()
         {
-            gizmos.primitive_3d(
-                Line3d {
-                    direction: Direction3d::new(*vector).expect("Invalid direction"),
+            gizmos.primitive_2d(
+                Segment2d {
+                    direction: Direction2d::new(*vector).expect("Invalid direction"),
+                    half_length: vector[i] * scale,
                 },
-                Vec3::ZERO,
-                Quat::IDENTITY,
+                Vec2::ZERO,
+                0.0,
                 axis_color[i],
             );
         },
@@ -85,16 +87,16 @@ fn spawn_axis(mut commands: Commands, mut gizmos: Gizmos, query: Query<&Basis3d>
 
 }
 
-fn update_y_basis(mut query: Query<&mut Basis3d>) {
+fn update_y_basis(mut query: Query<&mut Basis2d>) {
     // Rotate the basis vectors around the z-axis by 0.01 radians per second
-    let rotation = Quat::from_rotation_z(0.1 * 1.0 / 60.0);
-    for vector in query
-        .iter_mut()
-        .next()
-        .expect("No basis found")
-        .basis
-        .iter_mut()
-    {
-        *vector = rotation.mul_vec3(*vector);
-    }
+    // let rotation = Quat::from_rotation_z(0.1 * 1.0 / 60.0);
+    // for vector in query
+    //     .iter_mut()
+    //     .next()
+    //     .expect("No basis found")
+    //     .basis
+    //     .iter_mut()
+    // {
+    //     *vector = rotation.mul_vec3(*vector);
+    // }
 }
