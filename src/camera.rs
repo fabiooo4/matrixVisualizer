@@ -14,6 +14,8 @@ fn spawn_camera(mut commands: Commands) {
     commands.spawn((Camera3dBundle {
         transform: Transform::from_translation(Vec3::new(0.0, 0.0, 5.0)),
         projection: OrthographicProjection {
+            near: -10000.0,
+            far: 10000.0,
             scaling_mode: ScalingMode::FixedVertical(1.0),
             ..default()
         }.into(),
@@ -22,6 +24,7 @@ fn spawn_camera(mut commands: Commands) {
         PanOrbitCamera {
             button_pan: MouseButton::Left,
             button_orbit: MouseButton::Right,
+            zoom_upper_limit: Some(500.),
             ..default()
         }
     ));

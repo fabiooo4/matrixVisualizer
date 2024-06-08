@@ -41,25 +41,27 @@ fn spawn_axis(mut commands: Commands, mut gizmos: Gizmos, query: Query<&Basis3d>
     ];
 
     // Cycle through the basis vectors and draw them
-    commands.spawn(
-        for (i, vector) in query
-            .iter()
-            .next()
-            .expect("No basis found")
-            .basis
-            .iter()
-            .enumerate()
-        {
-            gizmos.primitive_3d(
-                Line3d {
-                    direction: Direction3d::new(*vector).expect("Invalid direction"),
-                },
-                Vec3::ZERO,
-                Quat::IDENTITY,
-                axis_color[i],
-            );
-        },
-    ).with_children(|parent| {
+    commands
+        .spawn(
+            for (i, vector) in query
+                .iter()
+                .next()
+                .expect("No basis found")
+                .basis
+                .iter()
+                .enumerate()
+            {
+                gizmos.primitive_3d(
+                    Line3d {
+                        direction: Direction3d::new(*vector).expect("Invalid direction"),
+                    },
+                    Vec3::ZERO,
+                    Quat::IDENTITY,
+                    axis_color[i],
+                );
+            },
+        )
+        .with_children(|parent| {
             // // Draw 100 lines along x axis
             // for i in -100..100 {
             //     let color = Color::rgba(0.5, 0.5, 0.5, 0.1);
@@ -82,7 +84,6 @@ fn spawn_axis(mut commands: Commands, mut gizmos: Gizmos, query: Query<&Basis3d>
             //     });
             // }
         });
-
 }
 
 fn update_y_basis(mut query: Query<&mut Basis3d>) {
